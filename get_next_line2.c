@@ -14,16 +14,52 @@
 
 #include <stdio.h>
 
-size_t	ft_strlen_stop_nl(const char *s)
+int	chrn(t_list *list)
 {
-	size_t	i;
+	int i;
+	int j;
 
 	i = 0;
-	while (s[i] && s[i] != '\n')
-		i++;
-	if (s[i] == '\n')
-		i++;
+	j = 0;
+	while (list)
+	{
+		while (list->content[j] && list->content[j++] != '\n')
+			i++;
+		if (list->content[j -1] && list->content[j - 1] == '\n')
+		{
+			i++;
+			break ;
+		}
+		j = 0;
+		list = list->next;
+	}
 	return (i);
+}
+
+char	*test(long long int i, t_list *list)
+{
+	int 	j;
+	int		k;
+	int		l;
+	char	*str;
+	
+	j = 0;
+	k = 0;
+	l = chrn(list);
+	str = malloc(l + 1);
+	str[l] = 0;
+	while (list)
+	{
+		while (j < BUFFER_SIZE + 1 && list->content[j] && k < l)
+		{
+			str[k] = list->content[j];
+			j++;
+			k++;
+		}
+		j = 0;
+		list = list->next;
+	}
+	return (str);
 }
 
 char	*get_next_line(int fd)
@@ -31,42 +67,45 @@ char	*get_next_line(int fd)
 	static char		buffer[BUFFER_SIZE + 1];
 	t_list			*list;
 	char			*str;
-	char			*str_two;
-	char			*str_three;
-	int				i;
-
+	char			*str_to_free;
+	char 			*copy_before_n;
+	long long int	i;
+	
 	i = 0;
-	str = 0;
-	str_two = 0;
-	str_three = 0;
-	if (BUFFER_SIZE == 0)
-		return (NULL);
-	if (*buffer && ft_strchr(buffer, '\n') && ft_strlen(ft_strchr(buffer, '\n')) > 1)
+	list = 0;
+	copy_before_n = 0;
+	if (*buffer && ft_strlen(ft_strchr(buffer, '\n')) > 1)
 	{
-		ft_strlcpy(buffer, ft_strchr(buffer, '\n') + 1, ft_strlen(ft_strchr(buffer, '\n')));
+		copy_before_n = malloc (ft_strlen(ft_strchr(buffer, '\n')));
+		if (!copy_before_n)
+			return (NULL);
+		ft_strlcpy(copy_before_n, ft_strchr(buffer, '\n'), ft_strlen(ft_strchr(buffer, '\n')));
+		ft_bzero(buffer, BUFFER_SIZE + 1);
 	}
-	while ((i = read(fd, buffer, BUFFER_SIZE)) <= BUFFER_SIZE)
-	{		
-		if (!str)
+	while (!ft_strchr(buffer, '\n'))
+	{
+		ft_bzero(buffer, BUFFER_SIZE + 1);
+		if ((i += read(fd, buffer, BUFFER_SIZE)) < BUFFER_SIZE + i)
 		{
-			str = malloc(ft_strlen_stop_nl(buffer) + 1);
-			ft_strlcpy(str, buffer, ft_strlen_stop_nl(buffer) + 1);
-			if (ft_strchr(buffer, '\n') || i < 1)
-				return (str) ;
-		}
-		else
-		{
-			str_two = malloc(ft_strlen_stop_nl(buffer) + 1);
-			ft_strlcpy(str_two, buffer, ft_strlen_stop_nl(buffer) + 1);
-			str_three = ft_strjoin (str, str_two);
-			free(str);
-			free(str_two);
-			str = str_three;
-		}
-		if (ft_strchr(buffer, '\n') || i < 1)
+			ft_lstadd_back(&list, ft_lstnew(ft_strdup(buffer)));
 			break ;
+		}
+		printf("|i = %lld|", i);
+		if (list == 0)
+			list = ft_lstnew(ft_strdup(buffer));
+		else
+			ft_lstadd_back(&list, ft_lstnew(ft_strdup(buffer)));
 	}
-	return (str_three);
+	if (copy_before_n)
+	{
+		str = ft_strjoin(copy_before_n, (str_to_free = test(i, list)));
+		free(copy_before_n);
+		free(str_to_free);
+	}
+	else
+		str = test(i, list);
+	ft_lstclear(&list);
+	return (str);
 }
 
 int	main()
@@ -81,16 +120,16 @@ int	main()
 
 //	test 0   ///////////////////////////////////////
 
-	fd = open(filename4, O_RDWR);
+	fd = open(filename1, O_RDWR);
 	if (fd == -1)
 	{
 		write(1, "\nOpen error\n", 12);
 		return (0);
 	}
-	while (i < 10)
+	while (i < 4)
 	{
 		str = get_next_line(fd);
-		printf("|%s", str);
+		printf("%s", str);
 		free(str);
 		i++;
 	}
