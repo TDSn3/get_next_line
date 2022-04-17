@@ -29,7 +29,6 @@ size_t	ft_strlen_stop_nl(const char *s)
 char	*get_next_line(int fd)
 {
 	static char		buffer[BUFFER_SIZE + 1];
-	t_list			*list;
 	char			*str;
 	char			*str_two;
 	char			*str_three;
@@ -41,18 +40,52 @@ char	*get_next_line(int fd)
 	str_three = 0;
 	if (BUFFER_SIZE == 0)
 		return (NULL);
-	if (*buffer && ft_strchr(buffer, '\n') && ft_strlen(ft_strchr(buffer, '\n')) > 1)
+
+//	printf(">%s", buffer);
+
+	if (*buffer)
 	{
-		ft_strlcpy(buffer, ft_strchr(buffer, '\n') + 1, ft_strlen(ft_strchr(buffer, '\n')));
+		str = malloc(ft_strlen_stop_nl(buffer) + 1);
+		ft_strlcpy(str, buffer, ft_strlen_stop_nl(buffer) + 1);
+		if (ft_strlen_stop_nl(buffer) == ft_strlen(buffer))
+			ft_bzero(buffer, BUFFER_SIZE);
 	}
-	while ((i = read(fd, buffer, BUFFER_SIZE)) <= BUFFER_SIZE)
-	{		
+
+//	printf(">%s", buffer);
+
+	if (ft_strchr(buffer, '\n'))
+	{
+		if (ft_strlen(ft_strchr(buffer, '\n')) > 1)
+			ft_strlcpy(buffer, ft_strchr(buffer, '\n') + 1, ft_strlen(ft_strchr(buffer, '\n')));
+		return (str);
+	}
+
+	if (ft_strchr(str, '\n'))
+	{
+		return (str);
+	}
+//	printf(">%s", buffer);
+//	printf(">%s", str);
+
+	while ((i = read(fd, buffer, BUFFER_SIZE)) <= BUFFER_SIZE && i > 0)
+	{
+		if (i < BUFFER_SIZE)
+			ft_bzero(buffer + i, BUFFER_SIZE - i);
 		if (!str)
 		{
 			str = malloc(ft_strlen_stop_nl(buffer) + 1);
 			ft_strlcpy(str, buffer, ft_strlen_stop_nl(buffer) + 1);
+//			printf(">%s", buffer);
+			
 			if (ft_strchr(buffer, '\n') || i < 1)
+			{
+				if (ft_strlen(ft_strchr(buffer, '\n')) > 1)
+					ft_strlcpy(buffer, ft_strchr(buffer, '\n') + 1, ft_strlen(ft_strchr(buffer, '\n')));
+				else
+					ft_bzero(buffer, ft_strlen_stop_nl(buffer));
+//				printf(">%s", buffer);
 				return (str) ;
+			}
 		}
 		else
 		{
@@ -66,9 +99,33 @@ char	*get_next_line(int fd)
 		if (ft_strchr(buffer, '\n') || i < 1)
 			break ;
 	}
+
+	if (!ft_strchr(buffer, '\n') && i == 0)
+	{
+		ft_bzero(buffer, BUFFER_SIZE);
+		return (str);
+	}
+	
+	if (ft_strchr(buffer, '\n'))
+	{
+		if (ft_strlen(ft_strchr(buffer, '\n')) > 1)
+			ft_strlcpy(buffer, ft_strchr(buffer, '\n') + 1, ft_strlen(ft_strchr(buffer, '\n')));
+		else
+			ft_bzero(buffer, ft_strlen_stop_nl(buffer));
+	}
+	
+	if (*buffer && i == 0 && !str_three)
+	{
+		str = malloc(ft_strlen_stop_nl(buffer) + 1);
+		ft_strlcpy(str, buffer, ft_strlen_stop_nl(buffer) + 1);
+		if (ft_strlen_stop_nl(buffer) == ft_strlen(buffer))
+			ft_bzero(buffer, BUFFER_SIZE);
+		return (str);
+	}
+	(void)i;
 	return (str_three);
 }
-
+/*
 int	main()
 {
 	int			i = 0;
@@ -81,13 +138,13 @@ int	main()
 
 //	test 0   ///////////////////////////////////////
 
-	fd = open(filename4, O_RDWR);
+	fd = open(filename3, O_RDWR);
 	if (fd == -1)
 	{
 		write(1, "\nOpen error\n", 12);
 		return (0);
 	}
-	while (i < 10)
+	while (i < 100)
 	{
 		str = get_next_line(fd);
 		printf("|%s", str);
@@ -95,7 +152,8 @@ int	main()
 		i++;
 	}
 		close(fd);
-/*
+
+
 //	test 1   ///////////////////////////////////////
 
 	fd = open(filename1, O_RDWR);
@@ -174,8 +232,8 @@ int	main()
 		free(str);
 	}
 	close(fd);
-*/
+
 //
 	return (0);
 }
-
+*/

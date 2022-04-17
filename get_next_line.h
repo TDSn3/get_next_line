@@ -14,7 +14,7 @@
 # define GET_NEXT_LINE_H
 
 #ifndef BUFFER_SIZE
-# define BUFFER_SIZE 1
+# define BUFFER_SIZE 100
 #endif
 
 # include <unistd.h>
@@ -32,11 +32,6 @@ void	ft_bzero(void *s, size_t n);
 char	*ft_strchr(const char *s, int c);
 size_t	ft_strlen(const char *s);
 size_t	ft_strlcpy(char *dst, const char *src, size_t size);
-char	*ft_strdup(const char *s);
 char	*ft_strjoin(char const *s1, char const *s2);
-t_list	*ft_lstlast(t_list *lst);
-t_list	*ft_lstnew(void *content);
-void	ft_lstadd_back(t_list **lst, t_list *new);
-void	ft_lstclear(t_list **lst);
 
 #endif
