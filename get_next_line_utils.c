@@ -19,7 +19,7 @@ void	ft_bzero(void *s, size_t n)
 	i = 0;
 	while (i < n)
 	{
-        ((char *)s)[i] = '\0';
+		((char *)s)[i] = '\0';
 		i++;
 	}
 }
@@ -29,15 +29,15 @@ char	*ft_strchr(const char *s, int c)
 	size_t	i;
 
 	i = 0;
-    if (s)
-    {
-	    while (s[i] || (char)c == 0)
-	    {
-	    	if (s[i] == (char)c)
-	    		return ((char *)s + i);
-	    	i++;
-	    }
-    }
+	if (s)
+	{
+		while (s[i] || (char)c == 0)
+		{
+			if (s[i] == (char)c)
+				return ((char *)s + i);
+			i++;
+		}
+	}
 	return (0);
 }
 
@@ -46,8 +46,9 @@ size_t	ft_strlen(const char *s)
 	size_t	a;
 
 	a = 0;
-	while (s[a])
-		a++;
+	if (s)
+		while (s[a])
+			a++;
 	return (a);
 }
 

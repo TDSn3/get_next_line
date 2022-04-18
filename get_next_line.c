@@ -14,7 +14,7 @@
 
 #include <stdio.h>
 
-size_t	ft_strlen_stop_nl(const char *s)
+static size_t	ft_strlen_stop_nl(const char *s)
 {
 	size_t	i;
 
@@ -25,7 +25,26 @@ size_t	ft_strlen_stop_nl(const char *s)
 		i++;
 	return (i);
 }
-
+/*
+static char	*ft_beffore_read(char *buffer)
+{
+	char	*str;
+	
+	str = malloc(ft_strlen_stop_nl(buffer) + 1);
+	ft_strlcpy(str, buffer, ft_strlen_stop_nl(buffer) + 1);
+	if (ft_strlen_stop_nl(buffer) == ft_strlen(buffer))
+		ft_bzero(buffer, BUFFER_SIZE);
+	if (ft_strchr(buffer, '\n'))
+	{
+		if (ft_strlen(ft_strchr(buffer, '\n')) > 1)
+			ft_strlcpy(buffer, ft_strchr(buffer, '\n') + 1, ft_strlen(ft_strchr(buffer, '\n')));
+		return (str);
+	}
+	if (ft_strchr(str, '\n'))
+		return (str);
+	return (0);
+}
+*/
 char	*get_next_line(int fd)
 {
 	static char		buffer[BUFFER_SIZE + 1];
@@ -34,56 +53,45 @@ char	*get_next_line(int fd)
 	char			*str_three;
 	int				i;
 
-	i = 0;
+	i = 1;
 	str = 0;
 	str_two = 0;
 	str_three = 0;
 	if (BUFFER_SIZE == 0)
 		return (NULL);
-
-//	printf(">%s", buffer);
-
 	if (*buffer)
 	{
 		str = malloc(ft_strlen_stop_nl(buffer) + 1);
 		ft_strlcpy(str, buffer, ft_strlen_stop_nl(buffer) + 1);
 		if (ft_strlen_stop_nl(buffer) == ft_strlen(buffer))
 			ft_bzero(buffer, BUFFER_SIZE);
+		if (ft_strchr(buffer, '\n'))
+		{
+			if (ft_strlen(ft_strchr(buffer, '\n')) > 1)
+				ft_strlcpy(buffer, ft_strchr(buffer, '\n') + 1, ft_strlen(ft_strchr(buffer, '\n')));
+			return (str);
+		}
+		if (ft_strchr(str, '\n'))
+			return (str);
+
 	}
-
-//	printf(">%s", buffer);
-
-	if (ft_strchr(buffer, '\n'))
+	while (i <= BUFFER_SIZE && i > 0)
 	{
-		if (ft_strlen(ft_strchr(buffer, '\n')) > 1)
-			ft_strlcpy(buffer, ft_strchr(buffer, '\n') + 1, ft_strlen(ft_strchr(buffer, '\n')));
-		return (str);
-	}
-
-	if (ft_strchr(str, '\n'))
-	{
-		return (str);
-	}
-//	printf(">%s", buffer);
-//	printf(">%s", str);
-
-	while ((i = read(fd, buffer, BUFFER_SIZE)) <= BUFFER_SIZE && i > 0)
-	{
+		i = read(fd, buffer, BUFFER_SIZE);
+		if (i > BUFFER_SIZE || i < 1)
+			break ;
 		if (i < BUFFER_SIZE)
 			ft_bzero(buffer + i, BUFFER_SIZE - i);
 		if (!str)
 		{
 			str = malloc(ft_strlen_stop_nl(buffer) + 1);
-			ft_strlcpy(str, buffer, ft_strlen_stop_nl(buffer) + 1);
-//			printf(">%s", buffer);
-			
+			ft_strlcpy(str, buffer, ft_strlen_stop_nl(buffer) + 1);			
 			if (ft_strchr(buffer, '\n') || i < 1)
 			{
 				if (ft_strlen(ft_strchr(buffer, '\n')) > 1)
 					ft_strlcpy(buffer, ft_strchr(buffer, '\n') + 1, ft_strlen(ft_strchr(buffer, '\n')));
 				else
-					ft_bzero(buffer, ft_strlen_stop_nl(buffer));
-//				printf(">%s", buffer);
+					ft_bzero(buffer, BUFFER_SIZE);
 				return (str) ;
 			}
 		}
@@ -105,7 +113,6 @@ char	*get_next_line(int fd)
 		ft_bzero(buffer, BUFFER_SIZE);
 		return (str);
 	}
-	
 	if (ft_strchr(buffer, '\n'))
 	{
 		if (ft_strlen(ft_strchr(buffer, '\n')) > 1)
@@ -113,7 +120,6 @@ char	*get_next_line(int fd)
 		else
 			ft_bzero(buffer, ft_strlen_stop_nl(buffer));
 	}
-	
 	if (*buffer && i == 0 && !str_three)
 	{
 		str = malloc(ft_strlen_stop_nl(buffer) + 1);
@@ -122,7 +128,6 @@ char	*get_next_line(int fd)
 			ft_bzero(buffer, BUFFER_SIZE);
 		return (str);
 	}
-	(void)i;
 	return (str_three);
 }
 /*
