@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: tda-silv <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/04/02 16:27:53 by tda-silv          #+#    #+#             */
-/*   Updated: 2022/04/13 12:55:05 by tda-silv         ###   ########.fr       */
+/*   Created: 2022/04/07 17:11:03 by tda-silv          #+#    #+#             */
+/*   Updated: 2022/04/07 17:11:10 by tda-silv         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 static size_t	ft_strlen_stop_nl(const char *s)
 {
@@ -85,26 +85,26 @@ static int	ft_in_while(char *buffer_p, char **str, char **str_three, int i)
 
 char	*get_next_line(int fd)
 {
-	static char	buffer[BUFFER_SIZE + 1];
+	static char	buffer[1024][BUFFER_SIZE + 1];
 	char		*str;
 	char		*str_three;
 	int			i;
 
-	if (BUFFER_SIZE == 0 || read(fd, buffer, 0) == -1)
+	if (BUFFER_SIZE == 0 || read(fd, buffer[fd], 0) == -1)
 		return (NULL);
-	if (ft_start_gnl(buffer, &str, &str_three, &i))
+	if (ft_start_gnl(buffer[fd], &str, &str_three, &i))
 		return (str);
 	while (i <= BUFFER_SIZE && i > 0)
 	{
-		i = read(fd, buffer, BUFFER_SIZE);
+		i = read(fd, buffer[fd], BUFFER_SIZE);
 		if (i > BUFFER_SIZE || i < 1)
 			break ;
-		if (ft_in_while(buffer, &str, &str_three, i))
+		if (ft_in_while(buffer[fd], &str, &str_three, i))
 			return (str);
-		if (ft_strchr(buffer, '\n') || i < 1)
+		if (ft_strchr(buffer[fd], '\n') || i < 1)
 			break ;
 	}
-	if (ft_strchr_buffer_nl(buffer, i) && i == 0)
+	if (ft_strchr_buffer_nl(buffer[fd], i) && i == 0)
 		return (str);
 	return (str_three);
 }
@@ -112,8 +112,18 @@ char	*get_next_line(int fd)
 int	main()
 {
 	int			i = 0;
-	int			fd;
-	char		*str;
+	int			fd1;
+	int			fd2;
+	int			fd3;
+	int			fd4;
+	int			fd5;
+
+	char		*str1;
+	char		*str2;
+	char		*str3;
+	char		*str4;
+	char		*str5;
+
 	const char	*filename1 = "test1.txt";
 	const char	*filename2 = "test2.txt";
 	const char	*filename3 = "test3.txt";
@@ -122,101 +132,43 @@ int	main()
 
 //	test 0   ///////////////////////////////////////
 
-	fd = open(filename5, O_RDWR);
-	if (fd == -1)
+	fd1 = open(filename1, O_RDWR);
+	fd2 = open(filename2, O_RDWR);
+	fd3 = open(filename3, O_RDWR);
+	fd4 = open(filename4, O_RDWR);
+	fd5 = open(filename5, O_RDWR);
+
+	if ((fd1 || fd2 || fd3 || fd4 || fd5) == -1)
 	{
 		write(1, "\nOpen error\n", 12);
 		return (0);
 	}
 	while (i < 100)
 	{
-		str = get_next_line(fd);
-		printf("|%s", str);
-		free(str);
+		str1 = get_next_line(fd1);
+		str2 = get_next_line(fd2);
+		str3 = get_next_line(fd3);
+		str4 = get_next_line(fd4);
+		str5 = get_next_line(fd5);
+
+		printf("|%s", str1);
+		printf("|%s", str2);
+		printf("|%s", str3);
+		printf("|%s", str4);
+		printf("|%s", str5);
+
+		free(str1);
+		free(str2);
+		free(str3);
+		free(str4);
+		free(str5);
 		i++;
 	}
-		close(fd);
-
-
-//	test 1   ///////////////////////////////////////
-
-	fd = open(filename1, O_RDWR);
-	if (fd == -1)
-	{
-		write(1, "\nOpen error\n", 12);
-		return (0);
-	}
-
-	for (int i = 0; i < 9999; i++)
-	{
-		str = get_next_line(fd);
-		if (!str)
-			break ;
-		printf ("%s", str);
-		free(str);
-	}
-	close(fd);
-	printf ("\n█████████████████████████test 2 - empty file\n");
-
-//	test 2   ///////////////////////////////////////
-
-	fd = open(filename2, O_RDWR);
-	if (fd == -1)
-	{
-		write(1, "\nOpen error\n", 12);
-		return (0);
-	}
-	
-	for (int i = 0; i < 9999; i++)
-	{
-		str = get_next_line(fd);
-		if (!str)
-			break ;
-		printf ("%s", str);
-		free(str);
-	}
-	close(fd);
-	printf ("\n█████████████████████████test 3 - empty first line with new line\n");
-
-//	test 3   ///////////////////////////////////////
-
-	fd = open(filename3, O_RDWR);
-	if (fd == -1)
-	{
-		write(1, "\nOpen error\n", 12);
-		return (0);
-	}
-	
-	for (int i = 0; i < 9999; i++)
-	{
-		str = get_next_line(fd);
-		if (!str)
-			break ;
-		printf ("%s", str);
-		free(str);
-	}
-	close(fd);
-	printf ("\n█████████████████████████test 4 - one line\n");
-
-//	test 4   ///////////////////////////////////////
-
-	fd = open(filename4, O_RDWR);
-	if (fd == -1)
-	{
-		write(1, "\nOpen error\n", 12);
-		return (0);
-	}
-	
-	for (int i = 0; i < 9999; i++)
-	{
-		str = get_next_line(fd);
-		if (!str)
-			break ;
-		printf ("%s", str);
-		free(str);
-	}
-	close(fd);
-
+		close(fd1);
+		close(fd2);
+		close(fd3);
+		close(fd4);
+		close(fd5);
 //
 	return (0);
 }
