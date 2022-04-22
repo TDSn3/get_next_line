@@ -35,7 +35,7 @@ static int	ft_strchr_buffer_nl(char *buffer_p, int i)
 	if (buffer_start_nl || i < 1)
 	{
 		j = ft_strlen(buffer_start_nl);
-		if (j > 1)
+		if (j > 1 && i > 0)
 			ft_strlcpy(buffer_p, buffer_start_nl + 1, j);
 		else
 			ft_bzero(buffer_p, BUFFER_SIZE);
@@ -45,21 +45,27 @@ static int	ft_strchr_buffer_nl(char *buffer_p, int i)
 		return (0);
 }
 
-static int	ft_gnl_end(char *buffer_p, char *str, char *str_three, int i)
-{
-	if (!ft_strchr(buffer_p, '\n') && i == 0)
+static int	ft_in_while(char *buffer_p, char **str, char **str_three, int i)
+{	
+	char			*str_two;
+
+	if (i < BUFFER_SIZE)
+		ft_bzero(buffer_p + i, BUFFER_SIZE - i);
+	if (!*str)
 	{
-		ft_bzero(buffer_p, BUFFER_SIZE);
-		return (1);
+		*str = malloc(ft_strlen_stop_nl(buffer_p) + 1);
+		ft_strlcpy(*str, buffer_p, ft_strlen_stop_nl(buffer_p) + 1);
+		if (ft_strchr_buffer_nl(buffer_p, i))
+			return (1) ;
 	}
-	ft_strchr_buffer_nl(buffer_p, i);
-	if (*buffer_p && i == 0 && !str_three)
+	else
 	{
-		str = malloc(ft_strlen_stop_nl(buffer_p) + 1);
-		ft_strlcpy(str, buffer_p, ft_strlen_stop_nl(buffer_p) + 1);
-		if (ft_strlen_stop_nl(buffer_p) == ft_strlen(buffer_p))
-			ft_bzero(buffer_p, BUFFER_SIZE);
-		return (1);
+		str_two = malloc(ft_strlen_stop_nl(buffer_p) + 1);
+		ft_strlcpy(str_two, buffer_p, ft_strlen_stop_nl(buffer_p) + 1);
+		*str_three = ft_strjoin (*str, str_two);
+		free(*str);
+		free(str_two);
+		*str = *str_three;
 	}
 	return (0);
 }
@@ -68,13 +74,11 @@ char	*get_next_line(int fd)
 {
 	static char		buffer[BUFFER_SIZE + 1];
 	char			*str;
-	char			*str_two;
 	char			*str_three;
 	int				i;
 
 	i = 1;
 	str = 0;
-	str_two = 0;
 	str_three = 0;
 	if (BUFFER_SIZE == 0)
 		return (NULL);
@@ -90,28 +94,12 @@ char	*get_next_line(int fd)
 		i = read(fd, buffer, BUFFER_SIZE);
 		if (i > BUFFER_SIZE || i < 1)
 			break ;
-		if (i < BUFFER_SIZE)
-			ft_bzero(buffer + i, BUFFER_SIZE - i);
-		if (!str)
-		{
-			str = malloc(ft_strlen_stop_nl(buffer) + 1);
-			ft_strlcpy(str, buffer, ft_strlen_stop_nl(buffer) + 1);			
-			if (ft_strchr_buffer_nl(buffer, i))
-				return (str) ;
-		}
-		else
-		{
-			str_two = malloc(ft_strlen_stop_nl(buffer) + 1);
-			ft_strlcpy(str_two, buffer, ft_strlen_stop_nl(buffer) + 1);
-			str_three = ft_strjoin (str, str_two);
-			free(str);
-			free(str_two);
-			str = str_three;
-		}
+		if (ft_in_while(buffer, &str, &str_three, i))
+			return (str);
 		if (ft_strchr(buffer, '\n') || i < 1)
 			break ;
 	}
-	if(ft_gnl_end(buffer, str, str_three, i))
+	if (ft_strchr_buffer_nl(buffer, i) && i == 0)
 		return (str);
 	return (str_three);
 }
